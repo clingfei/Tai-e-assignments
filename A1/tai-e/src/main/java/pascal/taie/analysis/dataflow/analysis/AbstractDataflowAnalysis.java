@@ -31,6 +31,7 @@ import pascal.taie.analysis.graph.cfg.Edge;
 import pascal.taie.config.AnalysisConfig;
 import pascal.taie.ir.IR;
 
+// 这个抽象类实现了DataflowAnalysis<Node, Fact>这个接口， 接口中的函数均为虚函数，因此没有实际意义
 public abstract class AbstractDataflowAnalysis<Node, Fact>
         extends MethodAnalysis
         implements DataflowAnalysis<Node, Fact> {

@@ -32,7 +32,10 @@ import pascal.taie.analysis.graph.cfg.Edge;
  * @param <Fact> type of data-flow facts
  */
 public interface DataflowAnalysis<Node, Fact> {
-
+/*
+ * 数据流分析与求解器之间的抽象接口
+ * 数据流分析需要实现接口，求解器使用接口来求解数据流
+ */
     /**
      * @return true if this analysis is forward, otherwise false.
      */

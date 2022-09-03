@@ -31,6 +31,7 @@ import java.util.Optional;
 
 /**
  * Representation of statements in Tai-e IR.
+ * 表示所有语句
  */
 public interface Stmt extends Indexable {
 
