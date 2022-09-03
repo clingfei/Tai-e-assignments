@@ -22,6 +22,7 @@
 
 package pascal.taie.analysis.dataflow.analysis;
 
+import fj.P;
 import pascal.taie.analysis.dataflow.fact.SetFact;
 import pascal.taie.analysis.graph.cfg.CFG;
 import pascal.taie.config.AnalysisConfig;
@@ -30,6 +31,7 @@ import pascal.taie.ir.exp.RValue;
 import pascal.taie.ir.exp.Var;
 import pascal.taie.ir.stmt.Stmt;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,6 +78,7 @@ public class LiveVariableAnalysis extends
         // OUTB的计算方法是对所有的后续的IN求并集
         // 对于每个后继，都需要将后继的IN与target meetInto后再求并，也就是说对target和fact求并集
         target.union(fact);
+
     }
 
     @Override
@@ -83,18 +86,30 @@ public class LiveVariableAnalysis extends
     public boolean transferNode(Stmt stmt, SetFact<Var> in, SetFact<Var> out) {
         // TODO - finish me
         // IN = use U (OUT - def)
+        /*for (Var arr : out.stream().toList())
+            System.out.println(arr);*/
+        SetFact<Var> new_in = out.copy();
         Optional<LValue> def = stmt.getDef();
-        def.ifPresent(lValue -> out.remove((Var) lValue));
+
+        if (def.isPresent() && def.get().getClass().toString().equals("class pascal.taie.ir.exp.Var")) {
+            new_in.remove((Var) def.get());
+        }
+//        def.ifPresent(lValue -> new_in.remove((Var) lValue));
+        // stmt.get
         List<RValue> uses = stmt.getUses();
         for (RValue use : uses) {
-            out.add((Var) use);
+            //System.out.println("type: " + use.getClass().toString() + " use: " + use);
+            if (use.getClass().toString().equals("class pascal.taie.ir.exp.Var"))
+                new_in.add((Var)use);
         }
+//        for (Var arr : new_in.stream().toList())
+//            System.out.println(arr);
+        //System.out.println(new_in.stream().toArray());
         // 如果in发生了变化，那么应该返回true，否则返回false
-        if (in.equals(out)) {
-            in = out;
+        if (in.equals(new_in)) {
             return false;
         } else {
-            in = out;
+            in.set(new_in);
             return true;
         }
     }
