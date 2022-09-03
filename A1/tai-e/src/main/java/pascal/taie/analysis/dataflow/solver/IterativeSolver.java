@@ -47,24 +47,8 @@ class IterativeSolver<Node, Fact> extends Solver<Node, Fact> {
         // TODO - finish me
         while (true) {
             boolean flag = false;
-            // 使用队列来倒序遍历CFG 使用set记录已经插入过队列的Node以避免重复插入
-            Set<Node> isVisited = new HashSet<>();
-            Queue<Node> queue = new LinkedList<>();
-            queue.add(cfg.getExit());
-            isVisited.add(cfg.getExit());
-            //System.out.println(queue.isEmpty());
-            // 遍历CFG中的每个结点，应该按照倒序来遍历，
-            while (!queue.isEmpty()) {
-                Node node = queue.peek();
-                queue.remove();
-                // 插入当前结点的前驱
-                for (Node pred : cfg.getPredsOf(node)) {
-                    if (!isVisited.contains(pred)) {
-                        isVisited.add(pred);
-                        queue.add(pred);
-                    }
-                }
-                // 对于node结点的每个后继
+            for (Node node : cfg) {
+            // 遍历CFG中的每个结点，对于node结点的每个后继
                 for (Node succ : cfg.getSuccsOf(node)) {
                     analysis.meetInto(result.getInFact(succ), result.getOutFact(node));
                 }

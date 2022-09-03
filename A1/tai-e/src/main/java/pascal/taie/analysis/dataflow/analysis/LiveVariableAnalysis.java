@@ -43,6 +43,7 @@ public class LiveVariableAnalysis extends
         AbstractDataflowAnalysis<Stmt, SetFact<Var>> {
 
     public static final String ID = "livevar";
+    private List<RValue> uses;
 
     public LiveVariableAnalysis(AnalysisConfig config) {
         super(config);
@@ -58,7 +59,6 @@ public class LiveVariableAnalysis extends
         // TODO - finish me
         // IN[exit] = 空集
         // getExit返回的实际上是cfg的一个node，这个node的类型是Stmt，
-        // IN
         return new SetFact<>();
     }
 // 初始化阶段应该将IN和OUT同样初始化为空集，那么如何初始化呢？
@@ -78,7 +78,6 @@ public class LiveVariableAnalysis extends
         // OUTB的计算方法是对所有的后续的IN求并集
         // 对于每个后继，都需要将后继的IN与target meetInto后再求并，也就是说对target和fact求并集
         target.union(fact);
-
     }
 
     @Override
@@ -86,25 +85,19 @@ public class LiveVariableAnalysis extends
     public boolean transferNode(Stmt stmt, SetFact<Var> in, SetFact<Var> out) {
         // TODO - finish me
         // IN = use U (OUT - def)
-        /*for (Var arr : out.stream().toList())
-            System.out.println(arr);*/
-        SetFact<Var> new_in = out.copy();
+        SetFact<Var> new_in = new SetFact<>();
+        new_in.set(out);
         Optional<LValue> def = stmt.getDef();
 
-        if (def.isPresent() && def.get().getClass().toString().equals("class pascal.taie.ir.exp.Var")) {
+        if (def.isPresent() && def.get() instanceof Var) {
             new_in.remove((Var) def.get());
         }
-//        def.ifPresent(lValue -> new_in.remove((Var) lValue));
-        // stmt.get
         List<RValue> uses = stmt.getUses();
         for (RValue use : uses) {
             //System.out.println("type: " + use.getClass().toString() + " use: " + use);
-            if (use.getClass().toString().equals("class pascal.taie.ir.exp.Var"))
+            if (use instanceof Var)
                 new_in.add((Var)use);
         }
-//        for (Var arr : new_in.stream().toList())
-//            System.out.println(arr);
-        //System.out.println(new_in.stream().toArray());
         // 如果in发生了变化，那么应该返回true，否则返回false
         if (in.equals(new_in)) {
             return false;
