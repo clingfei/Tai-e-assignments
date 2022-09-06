@@ -40,20 +40,22 @@ class WorkListSolver<Node, Fact> extends Solver<Node, Fact> {
     protected void doSolveForward(CFG<Node> cfg, DataflowResult<Node, Fact> result) {
         // TODO - finish me
         initializeForward(cfg, result);
-        Queue<Node> queue = new LinkedList<>();
-        queue.add(cfg.getEntry());
-        while (!queue.isEmpty()) {
-            Node curNode = queue.remove();
-            if (cfg.getPredsOf(curNode).isEmpty()) {
-                queue.addAll(cfg.getSuccsOf(curNode));
-                continue;
-            }
+        Queue<Node> workList = new LinkedList<>();
+        workList.offer(cfg.getEntry());
+        // 出错的原因归根结底在于在构建workList时，没有将(p, NAC)加入进去，
+        // 在initialize 的时候没有将In设置为NAC？
+        for (var node : cfg) {
+            for (var succ : cfg.getSuccsOf(node))
+                workList.offer(succ);
+        }
+        while (!workList.isEmpty()) {
+            Node curNode = workList.remove();
             for (Node node : cfg.getPredsOf(curNode)) {
                 analysis.meetInto(result.getOutFact(node), result.getInFact(curNode));
             }
-            if (!analysis.transferNode(curNode, result.getInFact(curNode), result.getOutFact(curNode))) {
-                queue.addAll(cfg.getSuccsOf(curNode));
-            }
+            analysis.transferNode(curNode, result.getInFact(curNode), result.getOutFact(curNode));
+//                queue.addAll(cfg.getSuccsOf(curNode));
+//            }
         }
     }
 

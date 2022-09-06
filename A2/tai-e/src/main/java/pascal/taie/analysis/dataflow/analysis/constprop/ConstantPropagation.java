@@ -54,7 +54,13 @@ public class ConstantPropagation extends
     public CPFact newBoundaryFact(CFG<Stmt> cfg) {
         // TODO - finish me
         //你要小心地处理每个会被分析的方法的参数。具体来说，你要将它们的值初始化为 NAC ?
-        return new CPFact();
+        // 在卡了半天之后我终于理解了这句话什么意思
+        // 每个方法的参数都是变量，其值为NAC，如果不处理参数，那么在后面的分析过程中就会缺失一部分
+        // 所以如何获得方法的参数？
+        CPFact ret = new CPFact();
+        for (var param : cfg.getIR().getParams())
+            ret.update(param, Value.getNAC());
+        return ret;
     }
 
     @Override
