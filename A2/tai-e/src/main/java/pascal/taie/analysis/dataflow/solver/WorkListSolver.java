@@ -39,9 +39,7 @@ class WorkListSolver<Node, Fact> extends Solver<Node, Fact> {
     @Override
     protected void doSolveForward(CFG<Node> cfg, DataflowResult<Node, Fact> result) {
         // TODO - finish me
-        initializeForward(cfg, result);
         Queue<Node> workList = new LinkedList<>();
-        workList.offer(cfg.getEntry());
         // 出错的原因归根结底在于在构建workList时，没有将(p, NAC)加入进去，
         // 在initialize 的时候没有将In设置为NAC？
 //        for (var node:cfg) {

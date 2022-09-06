@@ -81,7 +81,7 @@ public abstract class Solver<Node, Fact> {
         // TODO - finish me
 
         for (Node node : cfg) {
-            if (node == cfg.getEntry()) {
+            if (cfg.isEntry(node)) {
                 result.setOutFact(cfg.getEntry(), analysis.newBoundaryFact(cfg));
                 result.setInFact(cfg.getEntry(), analysis.newBoundaryFact(cfg));
             } else {

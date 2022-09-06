@@ -63,16 +63,24 @@ public class ConstantPropagation extends
     @Override
     public CPFact newInitialFact() {
         // TODO - finish me
-        // 初始化为UNDEF？
         return new CPFact();
     }
 
     @Override
     public void meetInto(CPFact fact, CPFact target) {
         // TODO - finish me
-        for (var mapping : fact.entries().toList()) {
-            target.update(mapping.getKey(), meetValue(mapping.getValue(), target.get(mapping.getKey())));
-        }
+        target.forEach((Var var, Value valTarget) -> { // Mention that `valTarget` cannot be UNDEF
+            Value valFact = fact.get(var);
+            target.update(var, meetValue(valTarget, valFact));
+        });
+        // Add the left element in `fact` to `target`
+        fact.forEach((Var var, Value valFact) -> { // Mention that `valFact` cannot be UNDEF
+            Value valTarget = target.get(var);
+            target.update(var, meetValue(valTarget, valFact));
+        });
+//        for (var mapping : fact.entries().toList()) {
+//            target.update(mapping.getKey(), meetValue(mapping.getValue(), target.get(mapping.getKey())));
+//        }
     }
 
     /**
@@ -87,9 +95,9 @@ public class ConstantPropagation extends
         else if (v1.isUndef() && v2.isUndef())
             return Value.getUndef();
         else if (v1.isUndef())
-            return Value.makeConstant(v2.getConstant());
+            return v2;
         else if (v2.isUndef())
-            return Value.makeConstant(v1.getConstant());
+            return v1;
         // c ^ c = c
         else if (v1.getConstant() == v2.getConstant())
             return Value.makeConstant(v1.getConstant());
@@ -104,7 +112,6 @@ public class ConstantPropagation extends
     @Override
     public boolean transferNode(Stmt stmt, CPFact in, CPFact out) {
         // TODO - finish me
-        // 实际上CPFact(Map)调用的构造函数new HybridMap最终调用的是 putAll，也是深拷贝，
         CPFact new_out = new CPFact();
         new_out.copyFrom(in);
         /*
@@ -113,20 +120,14 @@ public class ConstantPropagation extends
          */
         Optional<LValue> def = stmt.getDef();
         if (def.isPresent() && def.get() instanceof Var) {
-            new_out.update((Var) def.get(), Value.getUndef());
+            //new_out.update((Var) def.get(), Value.getUndef());
             if (canHoldInt((Var) def.get())) {
                 DefinitionStmt<?, ?> definitionStmt = (DefinitionStmt<?, ?>)stmt;
-                //System.out.println(stmt.getUses().getClass().toString());
-//                System.out.println(def.get().toString());
-//                System.out.println(def.get().getClass().toString());
-//                System.out.println(definitionStmt.getRValue().toString());
-//                System.out.println("------------");
                 if (definitionStmt.getRValue() instanceof Exp)
                     new_out.update((Var) def.get(), evaluate(definitionStmt.getRValue(), in));
                 else
                     new_out.update((Var) def.get(), Value.getNAC());
-            } else
-                new_out.update((Var) def.get(), Value.getNAC());
+            }
         }
         if (new_out.equals(out))
             return true;
@@ -176,64 +177,47 @@ public class ConstantPropagation extends
          */
         if (exp instanceof Var) {
             return in.get((Var)exp);
-        } else if (exp instanceof IntLiteral) {
+        }
+        else if (exp instanceof IntLiteral) {
             return Value.makeConstant(((IntLiteral) exp).getValue());
-        } else if (exp instanceof BinaryExp) {
-            Var operand1 = ((BinaryExp) exp).getOperand1();
-            Var operand2 = ((BinaryExp) exp).getOperand2();
-            Value op1 = in.get(operand1);
-            Value op2 = in.get(operand2);
+        }
+        else if (exp instanceof BinaryExp) {
+            Value op1 = evaluate(((BinaryExp) exp).getOperand1(), in);
+            Value op2 = evaluate(((BinaryExp) exp).getOperand2(), in);
+            //Value op1 = in.get(operand1);
+            //Value op2 = in.get(operand2);
             String op = ((BinaryExp) exp).getOperator().toString();
             // special case:
             if (op2.isConstant() && op2.getConstant() == 0 && (op.equals("/") || op.equals("%")))
                 return Value.getUndef();
             // op1 and op2 均为Constant
             if (op1.isConstant() && op2.isConstant()) {
-                switch (op) {
-                    case "+":
-                        return Value.makeConstant(op1.getConstant() + op2.getConstant());
-                    case "-":
-                        return Value.makeConstant(op1.getConstant() - op2.getConstant());
-                    case "*":
-                        return Value.makeConstant(op1.getConstant() * op2.getConstant());
-                    case "/":
-                        return Value.makeConstant(op1.getConstant() / op2.getConstant());
-                    case "%":
-                        return Value.makeConstant(op1.getConstant() % op2.getConstant());
-                    case "==":
-                        return Value.makeConstant(op1.getConstant() == op2.getConstant() ? 1 : 0);
-                    case "!=":
-                        return Value.makeConstant(op1.getConstant() != op2.getConstant() ? 1 : 0);
-                    case "<":
-                        return Value.makeConstant(op1.getConstant() < op2.getConstant() ? 1 : 0);
-                    case ">":
-                        return Value.makeConstant(op1.getConstant() > op2.getConstant() ? 1 : 0);
-                    case "<=":
-                        return Value.makeConstant(op1.getConstant() <= op2.getConstant() ? 1 : 0);
-                    case ">=":
-                        return Value.makeConstant(op1.getConstant() >= op2.getConstant() ? 1 : 0);
-                    case "<<":
-                        return Value.makeConstant(op1.getConstant() << op2.getConstant());
-                    case ">>":
-                        return Value.makeConstant(op1.getConstant() >> op2.getConstant());
-                    case ">>>":
-                        return Value.makeConstant(op1.getConstant() >>> op2.getConstant());
-                    case "|":
-                        return Value.makeConstant(op1.getConstant() | op2.getConstant());
-                    case "&":
-                        return Value.makeConstant(op1.getConstant() & op2.getConstant());
-                    case "^":
-                        return Value.makeConstant(op1.getConstant() ^ op2.getConstant());
-                }
+                return switch (op) {
+                    case "+" -> Value.makeConstant(op1.getConstant() + op2.getConstant());
+                    case "-" -> Value.makeConstant(op1.getConstant() - op2.getConstant());
+                    case "*" -> Value.makeConstant(op1.getConstant() * op2.getConstant());
+                    case "/" -> Value.makeConstant(op1.getConstant() / op2.getConstant());
+                    case "%" -> Value.makeConstant(op1.getConstant() % op2.getConstant());
+                    case "==" -> Value.makeConstant(op1.getConstant() == op2.getConstant() ? 1 : 0);
+                    case "!=" -> Value.makeConstant(op1.getConstant() != op2.getConstant() ? 1 : 0);
+                    case "<" -> Value.makeConstant(op1.getConstant() < op2.getConstant() ? 1 : 0);
+                    case ">" -> Value.makeConstant(op1.getConstant() > op2.getConstant() ? 1 : 0);
+                    case "<=" -> Value.makeConstant(op1.getConstant() <= op2.getConstant() ? 1 : 0);
+                    case ">=" -> Value.makeConstant(op1.getConstant() >= op2.getConstant() ? 1 : 0);
+                    case "<<" -> Value.makeConstant(op1.getConstant() << op2.getConstant());
+                    case ">>" -> Value.makeConstant(op1.getConstant() >> op2.getConstant());
+                    case ">>>" -> Value.makeConstant(op1.getConstant() >>> op2.getConstant());
+                    case "|" -> Value.makeConstant(op1.getConstant() | op2.getConstant());
+                    case "&" -> Value.makeConstant(op1.getConstant() & op2.getConstant());
+                    case "^" -> Value.makeConstant(op1.getConstant() ^ op2.getConstant());
+                    default -> Value.getNAC();
+                };
             } else if (op1.isNAC() || op2.isNAC())
                 return Value.getNAC();
             else
                 return Value.getUndef();
-        } else if (exp.getClass().toString().equals("class pascal.taie.ir.exp.InvokeVirtual")) {
-            return Value.getNAC();
         }
-        //System.out.println(exp.getClass().toString());
-        // otherwise
-        return Value.getUndef();
+        else
+            return Value.getNAC();
     }
 }
