@@ -53,10 +53,6 @@ public class ConstantPropagation extends
     @Override
     public CPFact newBoundaryFact(CFG<Stmt> cfg) {
         // TODO - finish me
-        //你要小心地处理每个会被分析的方法的参数。具体来说，你要将它们的值初始化为 NAC ?
-        // 在卡了半天之后我终于理解了这句话什么意思
-        // 每个方法的参数都是变量，其值为NAC，如果不处理参数，那么在后面的分析过程中就会缺失一部分
-        // 所以如何获得方法的参数？
         CPFact ret = new CPFact();
         for (var param : cfg.getIR().getParams())
             ret.update(param, Value.getNAC());
@@ -120,9 +116,16 @@ public class ConstantPropagation extends
             if (canHoldInt((Var) def.get())) {
                 DefinitionStmt<?, ?> definitionStmt = (DefinitionStmt<?, ?>)stmt;
                 //System.out.println(stmt.getUses().getClass().toString());
+//                System.out.println(def.get().toString());
+//                System.out.println(def.get().getClass().toString());
+//                System.out.println(definitionStmt.getRValue().toString());
+//                System.out.println("------------");
                 if (definitionStmt.getRValue() instanceof Exp)
                     new_out.update((Var) def.get(), evaluate(definitionStmt.getRValue(), in));
-            }
+                else
+                    new_out.update((Var) def.get(), Value.getNAC());
+            } else
+                new_out.update((Var) def.get(), Value.getNAC());
         }
         if (new_out.equals(out))
             return true;
@@ -220,8 +223,11 @@ public class ConstantPropagation extends
                         return Value.makeConstant(op1.getConstant() ^ op2.getConstant());
                 }
             }
+        } else if (exp.getClass().toString().equals("class pascal.taie.ir.exp.InvokeVirtual")) {
+            return Value.getNAC();
         }
+        //System.out.println(exp.getClass().toString());
         // otherwise
-        return Value.getUndef();
+        return Value.getNAC();
     }
 }
