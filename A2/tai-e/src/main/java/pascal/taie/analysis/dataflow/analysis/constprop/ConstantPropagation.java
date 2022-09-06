@@ -55,7 +55,8 @@ public class ConstantPropagation extends
         // TODO - finish me
         CPFact ret = new CPFact();
         for (var param : cfg.getIR().getParams())
-            ret.update(param, Value.getNAC());
+            if (canHoldInt(param))
+                ret.update(param, Value.getNAC());
         return ret;
     }
 
@@ -182,11 +183,13 @@ public class ConstantPropagation extends
             Var operand2 = ((BinaryExp) exp).getOperand2();
             Value op1 = in.get(operand1);
             Value op2 = in.get(operand2);
-            if (op1.isNAC() || op2.isNAC())
-                return Value.getNAC();
+            String op = ((BinaryExp) exp).getOperator().toString();
+            // special case:
+            if (op2.isConstant() && op2.getConstant() == 0 && (op.equals("/") || op.equals("%")))
+                return Value.getUndef();
             // op1 and op2 均为Constant
             if (op1.isConstant() && op2.isConstant()) {
-                switch (((BinaryExp) exp).getOperator().toString()) {
+                switch (op) {
                     case "+":
                         return Value.makeConstant(op1.getConstant() + op2.getConstant());
                     case "-":
@@ -194,9 +197,9 @@ public class ConstantPropagation extends
                     case "*":
                         return Value.makeConstant(op1.getConstant() * op2.getConstant());
                     case "/":
-                        if (op2.getConstant() == 0)
-                            return Value.getUndef();
                         return Value.makeConstant(op1.getConstant() / op2.getConstant());
+                    case "%":
+                        return Value.makeConstant(op1.getConstant() % op2.getConstant());
                     case "==":
                         return Value.makeConstant(op1.getConstant() == op2.getConstant() ? 1 : 0);
                     case "!=":
@@ -222,12 +225,15 @@ public class ConstantPropagation extends
                     case "^":
                         return Value.makeConstant(op1.getConstant() ^ op2.getConstant());
                 }
-            }
+            } else if (op1.isNAC() || op2.isNAC())
+                return Value.getNAC();
+            else
+                return Value.getUndef();
         } else if (exp.getClass().toString().equals("class pascal.taie.ir.exp.InvokeVirtual")) {
             return Value.getNAC();
         }
         //System.out.println(exp.getClass().toString());
         // otherwise
-        return Value.getNAC();
+        return Value.getUndef();
     }
 }

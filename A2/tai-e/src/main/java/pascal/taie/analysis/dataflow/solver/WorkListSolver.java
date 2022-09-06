@@ -44,18 +44,23 @@ class WorkListSolver<Node, Fact> extends Solver<Node, Fact> {
         workList.offer(cfg.getEntry());
         // 出错的原因归根结底在于在构建workList时，没有将(p, NAC)加入进去，
         // 在initialize 的时候没有将In设置为NAC？
+//        for (var node:cfg) {
+//            System.out.println(node.toString());
+//        }
+//        for (var node : cfg.getIR().getVars())
+//            System.out.println(node.toString());
         for (var node : cfg) {
-            for (var succ : cfg.getSuccsOf(node))
-                workList.offer(succ);
+            workList.offer(node);
         }
         while (!workList.isEmpty()) {
             Node curNode = workList.remove();
             for (Node node : cfg.getPredsOf(curNode)) {
                 analysis.meetInto(result.getOutFact(node), result.getInFact(curNode));
             }
-            analysis.transferNode(curNode, result.getInFact(curNode), result.getOutFact(curNode));
-//                queue.addAll(cfg.getSuccsOf(curNode));
-//            }
+
+            if (!analysis.transferNode(curNode, result.getInFact(curNode), result.getOutFact(curNode)))
+                for (var node : cfg.getSuccsOf(curNode))
+                    workList.offer(node);
         }
     }
 

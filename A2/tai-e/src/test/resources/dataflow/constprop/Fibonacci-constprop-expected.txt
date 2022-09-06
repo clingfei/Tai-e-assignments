@@ -1,0 +1,28 @@
+-------------------- <Fibonacci: void <init>()> (constprop) --------------------
+[0@L2] invokespecial %this.<java.lang.Object: void <init>()>(); {}
+[1@L2] return; {}
+
+-------------------- <Fibonacci: int getFibonacci(int)> (constprop) --------------------
+[0@L4] %intconst0 = 0; {%intconst0=0, n=NAC}
+[1@L4] if (n == %intconst0) goto 8; {%intconst0=0, n=NAC}
+[2@L4] goto 3; {%intconst0=0, n=NAC}
+[3@L4] nop; {%intconst0=0, n=NAC}
+[4@L4] %intconst1 = 1; {%intconst0=0, %intconst1=1, n=NAC}
+[5@L4] if (n == %intconst1) goto 8; {%intconst0=0, %intconst1=1, n=NAC}
+[6@L4] goto 10; {%intconst0=0, %intconst1=1, n=NAC}
+[7@L4] goto 10; {}
+[8@L4] nop; {%intconst0=0, %intconst1=1, n=NAC}
+[9@L5] return n; {%intconst0=0, %intconst1=1, n=NAC}
+[10@L5] nop; {%intconst0=0, %intconst1=1, n=NAC}
+[11@L7] temp$0 = n - %intconst1; {%intconst0=0, %intconst1=1, n=NAC, temp$0=NAC}
+[12@L7] temp$1 = invokevirtual %this.<Fibonacci: int getFibonacci(int)>(temp$0); {%intconst0=0, %intconst1=1, n=NAC, temp$0=NAC, temp$1=NAC}
+[13@L7] %intconst2 = 2; {%intconst0=0, %intconst1=1, %intconst2=2, n=NAC, temp$0=NAC, temp$1=NAC}
+[14@L7] temp$3 = n - %intconst2; {%intconst0=0, %intconst1=1, %intconst2=2, n=NAC, temp$0=NAC, temp$1=NAC, temp$3=NAC}
+[15@L7] temp$4 = invokevirtual %this.<Fibonacci: int getFibonacci(int)>(temp$3); {%intconst0=0, %intconst1=1, %intconst2=2, n=NAC, temp$0=NAC, temp$1=NAC, temp$3=NAC, temp$4=NAC}
+[16@L7] temp$5 = temp$1 + temp$4; {%intconst0=0, %intconst1=1, %intconst2=2, n=NAC, temp$0=NAC, temp$1=NAC, temp$3=NAC, temp$4=NAC, temp$5=NAC}
+[17@L7] return temp$5; {%intconst0=0, %intconst1=1, %intconst2=2, n=NAC, temp$0=NAC, temp$1=NAC, temp$3=NAC, temp$4=NAC, temp$5=NAC}
+
+process-result finishes, elapsed time: 0.04s
+Tai-e finishes, elapsed time: 6.30s
+
+Process finished with exit code 0

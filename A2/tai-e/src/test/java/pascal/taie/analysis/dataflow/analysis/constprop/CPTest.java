@@ -66,4 +66,14 @@ public class CPTest {
     public void testInterprocedural() {
         testCP("Interprocedural");
     }
+
+    @Test
+    public void testFibonacci() {
+        testCP("Fibonacci");
+    }
+
+    @Test
+    public void testBranchLoop() {
+        testCP("BranchLoop");
+    }
 }

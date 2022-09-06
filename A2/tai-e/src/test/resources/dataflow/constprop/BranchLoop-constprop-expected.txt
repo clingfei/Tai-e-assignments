@@ -1,0 +1,49 @@
+-------------------- <BranchLoop: void <init>()> (constprop) --------------------
+[0@L1] invokespecial %this.<java.lang.Object: void <init>()>(); {}
+[1@L1] return; {}
+
+-------------------- <BranchLoop: int loopBranch(int,int,int)> (constprop) --------------------
+[0@L5] %intconst0 = 1; {%intconst0=1, k=NAC, m=NAC, n=NAC}
+[1@L5] i = m - %intconst0; {%intconst0=1, i=NAC, k=NAC, m=NAC, n=NAC}
+[2@L5] nop; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[3@L5] if (i < k) goto 5; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[4@L5] goto 15; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[5@L5] nop; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[6@L6] if (i >= n) goto 8; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[7@L6] goto 10; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[8@L6] nop; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[9@L7] a = n; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[10@L7] nop; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[11@L9] a = a + i; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[12@L9] nop; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[13@L5] i = i + %intconst0; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[14@L5] goto 2; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[15@L5] nop; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+[16@L11] return a; {%intconst0=1, a=NAC, i=NAC, k=NAC, m=NAC, n=NAC}
+
+-------------------- <BranchLoop: void branchLoop(int,boolean)> (constprop) --------------------
+[0@L16] x = 1; {c=NAC, d=NAC, x=1}
+[1@L17] y = 2; {c=NAC, d=NAC, x=1, y=2}
+[2@L18] %intconst0 = 0; {%intconst0=0, c=NAC, d=NAC, x=1, y=2}
+[3@L18] if (c > %intconst0) goto 5; {%intconst0=0, c=NAC, d=NAC, x=1, y=2}
+[4@L18] goto 22; {%intconst0=0, c=NAC, d=NAC, x=1, y=2}
+[5@L18] nop; {%intconst0=0, c=NAC, d=NAC, x=1, y=2}
+[6@L19] nop; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=NAC, y=2, z=1}
+[7@L20] %intconst1 = 1; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=NAC, y=2, z=1}
+[8@L20] x = y + %intconst1; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[9@L21] %intconst2 = 2; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[10@L21] y = %intconst2 * z; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[11@L22] if (d == %intconst0) goto 15; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[12@L22] goto 13; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[13@L22] nop; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[14@L23] x = y + z; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[15@L23] nop; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[16@L25] z = 1; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[17@L25] nop; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[18@L26] %intconst3 = 20; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[19@L26] if (c < %intconst3) goto 6; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[20@L26] goto 21; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[21@L26] nop; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=3, y=2, z=1}
+[22@L26] nop; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=NAC, y=2, z=1}
+[23@L28] z = x; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=NAC, y=2, z=NAC}
+[24@L28] return; {%intconst0=0, %intconst1=1, %intconst2=2, %intconst3=20, c=NAC, d=NAC, x=NAC, y=2, z=NAC}
