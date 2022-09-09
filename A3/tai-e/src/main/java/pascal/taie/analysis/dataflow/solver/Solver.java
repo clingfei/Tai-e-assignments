@@ -76,9 +76,9 @@ public abstract class Solver<Node, Fact> {
         return result;
     }
 
+    // ConstantPropagation use Forward Analysis
     protected void initializeForward(CFG<Node> cfg, DataflowResult<Node, Fact> result) {
         // TODO - finish me
-
         for (Node node : cfg) {
             if (cfg.isEntry(node)) {
                 result.setOutFact(cfg.getEntry(), analysis.newBoundaryFact(cfg));
@@ -90,8 +90,17 @@ public abstract class Solver<Node, Fact> {
         }
     }
 
+    // LiveVariable use Backward Analysis.
     protected void initializeBackward(CFG<Node> cfg, DataflowResult<Node, Fact> result) {
-        throw new UnsupportedOperationException();
+        for (Node node : cfg) {
+            if (cfg.isExit(node)) {
+                result.setInFact(node, analysis.newBoundaryFact(cfg));
+                result.setOutFact(node, analysis.newBoundaryFact(cfg));
+            } else {
+                result.setOutFact(node, analysis.newInitialFact());
+                result.setInFact(node, analysis.newInitialFact());
+            }
+        }
     }
 
     /**

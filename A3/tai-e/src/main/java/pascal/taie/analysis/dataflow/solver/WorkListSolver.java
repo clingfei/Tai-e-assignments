@@ -63,6 +63,17 @@ class WorkListSolver<Node, Fact> extends Solver<Node, Fact> {
 
     @Override
     protected void doSolveBackward(CFG<Node> cfg, DataflowResult<Node, Fact> result) {
-        throw new UnsupportedOperationException();
+        while (true) {
+            boolean flag = false;
+            for (Node node : cfg) {
+                // 遍历CFG中的每个结点，对于node结点的每个后继
+                for (Node succ : cfg.getSuccsOf(node)) {
+                    analysis.meetInto(result.getInFact(succ), result.getOutFact(node));
+                }
+                // 只要有一个true，说明至少一个节点的IN集合发生了改变，那么可以继续执行
+                flag |= analysis.transferNode(node, result.getInFact(node), result.getOutFact(node));
+            }
+            if (!flag) break;
+        }
     }
 }
