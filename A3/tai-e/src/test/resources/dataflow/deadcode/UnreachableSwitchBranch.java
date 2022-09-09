@@ -12,7 +12,6 @@ class UnreachableSwitchBranch {
                 break; // unreachable case
             case 8:
                 use(8);
-                break;
             default:
                 use(666);
                 break; // unreachable case
