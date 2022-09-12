@@ -1,0 +1,36 @@
+-------------------- <A: void <init>()> (inter-constprop) --------------------
+[0@L9] invokespecial %this.<java.lang.Object: void <init>()>(); {}
+[1@L9] return; {}
+
+-------------------- <A: void foo()> (inter-constprop) --------------------
+[0@L11] temp$0 = new B; {}
+[1@L11] invokespecial temp$0.<B: void <init>()>(); {}
+[2@L11] b = temp$0; {}
+[3@L12] invokevirtual b.<B: void bar()>(); {}
+[4@L12] return; {}
+
+-------------------- <B: void <init>()> (inter-constprop) --------------------
+[0@L16] invokespecial %this.<java.lang.Object: void <init>()>(); {}
+[1@L16] return; {}
+
+-------------------- <B: void bar()> (inter-constprop) --------------------
+[0@L18] temp$0 = new C; {}
+[1@L18] invokespecial temp$0.<C: void <init>()>(); {}
+[2@L18] c = temp$0; {}
+[3@L19] invokevirtual c.<C: void baz()>(); {}
+[4@L19] return; {}
+
+-------------------- <C: void <init>()> (inter-constprop) --------------------
+[0@L23] invokespecial %this.<java.lang.Object: void <init>()>(); {}
+[1@L23] return; {}
+
+-------------------- <C: void baz()> (inter-constprop) --------------------
+[0@L25] invokestatic <Recursion: void main(java.lang.String[])>(%nullconst); {}
+[1@L25] return; {}
+
+-------------------- <Recursion: void main(java.lang.String[])> (inter-constprop) --------------------
+[0@L4] temp$0 = new A; {}
+[1@L4] invokespecial temp$0.<A: void <init>()>(); {}
+[2@L4] a = temp$0; {}
+[3@L5] invokevirtual a.<A: void foo()>(); {}
+[4@L5] return; {}

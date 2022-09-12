@@ -25,6 +25,8 @@ package pascal.taie.analysis.graph.callgraph.cha;
 import org.junit.Test;
 import pascal.taie.analysis.Tests;
 
+import java.beans.Transient;
+
 public class CHATest {
     
     protected static void test(String main) {
@@ -50,4 +52,7 @@ public class CHATest {
     public void testAbstractMethod() {
         test("AbstractMethod");
     }
+
+    @Test
+    public void testRecursion() {test("Recursion");}
 }

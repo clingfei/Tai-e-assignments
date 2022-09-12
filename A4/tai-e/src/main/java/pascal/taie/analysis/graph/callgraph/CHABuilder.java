@@ -29,10 +29,9 @@ import pascal.taie.language.classes.ClassHierarchy;
 import pascal.taie.language.classes.JClass;
 import pascal.taie.language.classes.JMethod;
 import pascal.taie.language.classes.Subsignature;
+import pascal.taie.language.type.Type;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implementation of the CHA algorithm.
@@ -51,6 +50,22 @@ class CHABuilder implements CGBuilder<Invoke, JMethod> {
         DefaultCallGraph callGraph = new DefaultCallGraph();
         callGraph.addEntryMethod(entry);
         // TODO - finish me
+        Queue<JMethod> workList = new LinkedList<>();
+        workList.add(entry);
+        while (!workList.isEmpty()) {
+            JMethod method = workList.remove();
+            if (!callGraph.addReachableMethod(method))
+                continue;
+            for (var callSite : callGraph.getCallSitesIn(method)) {
+                Set<JMethod> T = resolve(callSite);
+                for (JMethod jMethod : T) {
+                    if (jMethod == null) continue;
+                    Edge<Invoke, JMethod> edge = new Edge<>(CallGraphs.getCallKind(callSite), callSite, jMethod);
+                    callGraph.addEdge(edge);
+                    workList.add(jMethod);
+                }
+            }
+        }
         return callGraph;
     }
 
@@ -59,7 +74,36 @@ class CHABuilder implements CGBuilder<Invoke, JMethod> {
      */
     private Set<JMethod> resolve(Invoke callSite) {
         // TODO - finish me
-        return null;
+        Set<JMethod> T = new HashSet<>();
+        MethodRef method = callSite.getMethodRef();
+        // callsite的函数签名，应该用哪个函数？
+        // subSignature和signature的区别在于，signature有类，而subSignature没有类。
+        JClass jClass = method.getDeclaringClass();
+        Subsignature jSubsignature = method.getSubsignature();
+        switch (CallGraphs.getCallKind(callSite)) {
+            case STATIC -> T.add(jClass.getDeclaredMethod(jSubsignature));
+            case SPECIAL -> T.add(dispatch(jClass, jSubsignature));
+            case VIRTUAL, INTERFACE -> {
+                Set<JClass> allSubJClasses = getAllSubClasses(jClass);
+                for (JClass jClassIter : allSubJClasses) {
+                    T.add(dispatch(jClassIter, jSubsignature));
+                }
+            }
+        }
+        return T;
+    }
+
+    private Set<JClass> getAllSubClasses(JClass jClass) {
+        Set<JClass> subClasses = new HashSet<>(), jNewClasses = new HashSet<>();
+        subClasses.addAll(hierarchy.getDirectSubclassesOf(jClass));
+        subClasses.addAll(hierarchy.getDirectImplementorsOf(jClass));
+        subClasses.addAll(hierarchy.getDirectSubinterfacesOf(jClass));
+        for (JClass jClassIter : subClasses) {
+            jNewClasses.addAll(getAllSubClasses(jClassIter));
+        }
+        subClasses.addAll(jNewClasses);
+        subClasses.add(jClass);
+        return subClasses;
     }
 
     /**
@@ -70,6 +114,15 @@ class CHABuilder implements CGBuilder<Invoke, JMethod> {
      */
     private JMethod dispatch(JClass jclass, Subsignature subsignature) {
         // TODO - finish me
-        return null;
+        JMethod method = jclass.getDeclaredMethod(subsignature);
+        // what's the meaning for isNative?
+        // return Dispatch(c', m), c' is the superclass of jclass
+        if (method == null || method.isAbstract()) {
+            JClass superClass = jclass.getSuperClass();
+            if (superClass == null) return null;
+            else return dispatch(superClass, subsignature);
+        } else {
+            return method;
+        }
     }
 }

@@ -57,4 +57,7 @@ public class InterCPTest {
     public void testMultiIntArgs() {
         test("MultiIntArgs");
     }
+
+    @Test
+    public void testRecursion() {test("Recursion");}
 }
