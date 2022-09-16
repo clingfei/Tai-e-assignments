@@ -195,27 +195,27 @@ class Solver {
                     for (LoadField loadField : x.getLoadFields()) {
                         if (loadField.isStatic()) continue;
                         addPFGEdge(
-                                pointerFlowGraph.getVarPtr(loadField.getLValue()),
-                                pointerFlowGraph.getInstanceField(obj, loadField.getFieldRef().resolve())
+                                pointerFlowGraph.getInstanceField(obj, loadField.getFieldRef().resolve()),
+                                pointerFlowGraph.getVarPtr(loadField.getLValue())
                         );
                     }
                     for (StoreField storeField : x.getStoreFields()) {
                         if (storeField.isStatic()) continue;
                         addPFGEdge(
-                                pointerFlowGraph.getInstanceField(obj, storeField.getFieldRef().resolve()),
-                                pointerFlowGraph.getVarPtr(storeField.getRValue())
+                                pointerFlowGraph.getVarPtr(storeField.getRValue()),
+                                pointerFlowGraph.getInstanceField(obj, storeField.getFieldRef().resolve())
                         );
                     }
                     for (LoadArray loadArray : x.getLoadArrays()) {
                         addPFGEdge(
-                                pointerFlowGraph.getVarPtr(loadArray.getLValue()),
-                                pointerFlowGraph.getArrayIndex(obj)
+                                pointerFlowGraph.getArrayIndex(obj),
+                                pointerFlowGraph.getVarPtr(loadArray.getLValue())
                         );
                     }
                     for (StoreArray storeArray : x.getStoreArrays()) {
                         addPFGEdge(
-                                pointerFlowGraph.getArrayIndex(obj),
-                                pointerFlowGraph.getVarPtr(storeArray.getRValue())
+                                pointerFlowGraph.getVarPtr(storeArray.getRValue()),
+                                pointerFlowGraph.getArrayIndex(obj)
                         );
                     }
                     processCall(x, obj);
