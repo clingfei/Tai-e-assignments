@@ -135,9 +135,10 @@ class Solver {
         public Void visit(LoadField stmt) {
             if (!stmt.isStatic()) return null;
             // field is T.f?
-            VarPtr x = pointerFlowGraph.getVarPtr(stmt.getLValue());
-            Pointer staticField = pointerFlowGraph.getStaticField(stmt.getFieldRef().resolve());
-            addPFGEdge(staticField, x);
+            addPFGEdge(
+                    pointerFlowGraph.getStaticField(stmt.getFieldRef().resolve()),
+                    pointerFlowGraph.getVarPtr(stmt.getLValue())
+            );
             return null;
         }
 
@@ -145,13 +146,10 @@ class Solver {
         @Override
         public Void visit(StoreField stmt) {
             if (!stmt.isStatic()) return null;
-            VarPtr x = pointerFlowGraph.getVarPtr(stmt.getRValue());
-
-            InstanceField field = pointerFlowGraph.getInstanceField(
-                    (Obj) ((InstanceFieldAccess) stmt.getLValue()).getBase(),
-                    stmt.getFieldRef().resolve()
+            addPFGEdge(
+                    pointerFlowGraph.getVarPtr(stmt.getRValue()),
+                    pointerFlowGraph.getStaticField(stmt.getFieldRef().resolve())
             );
-            addPFGEdge(x, field);
             return null;
         }
 
