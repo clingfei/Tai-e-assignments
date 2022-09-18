@@ -53,7 +53,7 @@ public class _2CallSelector implements ContextSelector {
                     callSite.getCallSite()
             );
         else
-            return make(callSite.getContext());
+            return make(callSite.getCallSite());
     }
 
     @Override

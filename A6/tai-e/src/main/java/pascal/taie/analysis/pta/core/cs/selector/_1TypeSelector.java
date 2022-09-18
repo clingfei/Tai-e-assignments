@@ -50,7 +50,7 @@ public class _1TypeSelector implements ContextSelector {
     public Context selectContext(CSCallSite callSite, CSObj recv, JMethod callee) {
         // TODO - finish me
         if (recv == null) return selectContext(callSite, callee);
-        return ListContext.make(recv.getObject().getType());
+        return ListContext.make(recv.getObject().getContainerType());
     }
 
     @Override

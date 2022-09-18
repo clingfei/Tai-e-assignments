@@ -185,22 +185,24 @@ class Solver {
         while (!workList.isEmpty()) {
             WorkList.Entry entry = workList.pollEntry();
             PointsToSet delta = propagate(entry.pointer(), entry.pointsToSet());
-            if (entry.pointer() instanceof CSVar) {
-                Var x = ((CSVar) entry.pointer()).getVar();
-                for (var obj : delta) {
+            if (entry.pointer() instanceof CSVar varPtr) {
+                Var x = varPtr.getVar();
+                // c
+                Context context = varPtr.getContext();
+                for (var obj : delta.getObjects()) {
                     // y = x.f
                     for (var loadField : x.getLoadFields()) {
                         if (loadField.isStatic()) continue;
                         addPFGEdge(
                                 csManager.getInstanceField(obj, loadField.getFieldRef().resolve()),
-                                csManager.getCSVar(obj.getContext(), loadField.getLValue())
+                                csManager.getCSVar(context, loadField.getLValue())
                         );
                     }
                     // x.f = y
                     for (var storeField : x.getStoreFields()) {
                         if (storeField.isStatic()) continue;
                         addPFGEdge(
-                              csManager.getCSVar(obj.getContext(), storeField.getRValue()) ,
+                              csManager.getCSVar(context, storeField.getRValue()) ,
                               csManager.getInstanceField(obj, storeField.getFieldRef().resolve())
                         );
                     }
@@ -208,13 +210,13 @@ class Solver {
                     for (var loadArray : x.getLoadArrays()) {
                         addPFGEdge(
                                 csManager.getArrayIndex(obj),
-                                csManager.getCSVar(obj.getContext(), loadArray.getLValue())
+                                csManager.getCSVar(context, loadArray.getLValue())
                         );
                     }
                     // x[i] = y
                     for (var storeArray : x.getStoreArrays()) {
                         addPFGEdge(
-                                csManager.getCSVar(obj.getContext(), storeArray.getRValue()),
+                                csManager.getCSVar(context, storeArray.getRValue()),
                                 csManager.getArrayIndex(obj)
                         );
                     }
@@ -237,8 +239,9 @@ class Solver {
                 if (!ptn.contains(obj))
                     delta.addObject(obj);
             ptn.addAll(delta);
-            for (Pointer succ : pointerFlowGraph.getSuccsOf(pointer))
-                workList.addEntry(succ, delta);
+            if (!delta.isEmpty())
+                for (Pointer succ : pointerFlowGraph.getSuccsOf(pointer))
+                    workList.addEntry(succ, delta);
         }
         return delta;
     }
@@ -259,19 +262,14 @@ class Solver {
 
     private void processInstStaticCall(CSObj recv, Invoke stmt, Context context) {
         JMethod jMethod = resolveCallee(recv, stmt);
-        if (jMethod == null) return;
+        //if (jMethod == null) return;
         // callSite应该是与stmt保持一致
         CSCallSite callSite = csManager.getCSCallSite(context, stmt);
-        Context callCtx;
-        if (recv == null)
-            callCtx = contextSelector.selectContext(callSite, jMethod);
-        else
-            callCtx = contextSelector.selectContext(callSite, recv, jMethod);
-        if (recv != null) {
-            workList.addEntry(csManager.getCSVar(callCtx, jMethod.getIR().getThis()), PointsToSetFactory.make(recv));
-        }
+        Context callCtx = contextSelector.selectContext(callSite, recv, jMethod);
         // 但是CSMethod应该通过select选择context？
         CSMethod csMethod = csManager.getCSMethod(callCtx, jMethod);
+        if (recv != null)
+            workList.addEntry(csManager.getCSVar(callCtx, jMethod.getIR().getThis()), PointsToSetFactory.make(recv));
         if (callGraph.addEdge(new Edge<>(CallGraphs.getCallKind(stmt), callSite, csMethod))) {
             addReachable(csMethod);
             // 形参
@@ -285,7 +283,7 @@ class Solver {
                         csManager.getCSVar(callCtx, params.get(i))
                 );
             }
-            List<Var> retVars = csMethod.getMethod().getIR().getVars();
+            List<Var> retVars = jMethod.getIR().getReturnVars();
             Var result = stmt.getResult();
             if (result != null) {
                 CSVar csResult = csManager.getCSVar(context, result);
