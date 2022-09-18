@@ -126,8 +126,10 @@ class Solver {
 
         public Void visit(New stmt) {
             Obj obj = heapModel.getObj(stmt);
-            CSObj csObj = csManager.getCSObj(context, obj);
             CSVar x = csManager.getCSVar(context, stmt.getLValue());
+
+            Context ctx = contextSelector.selectHeapContext(csMethod, obj);
+            CSObj csObj = csManager.getCSObj(ctx, obj);
             PointsToSet pointsToSet = PointsToSetFactory.make(csObj);
             workList.addEntry(x, pointsToSet);
             return null;
@@ -257,9 +259,17 @@ class Solver {
 
     private void processInstStaticCall(CSObj recv, Invoke stmt, Context context) {
         JMethod jMethod = resolveCallee(recv, stmt);
+        if (jMethod == null) return;
         // callSite应该是与stmt保持一致
         CSCallSite callSite = csManager.getCSCallSite(context, stmt);
-        Context callCtx = contextSelector.selectContext(callSite, jMethod);
+        Context callCtx;
+        if (recv == null)
+            callCtx = contextSelector.selectContext(callSite, jMethod);
+        else
+            callCtx = contextSelector.selectContext(callSite, recv, jMethod);
+        if (recv != null) {
+            workList.addEntry(csManager.getCSVar(callCtx, jMethod.getIR().getThis()), PointsToSetFactory.make(recv));
+        }
         // 但是CSMethod应该通过select选择context？
         CSMethod csMethod = csManager.getCSMethod(callCtx, jMethod);
         if (callGraph.addEdge(new Edge<>(CallGraphs.getCallKind(stmt), callSite, csMethod))) {
