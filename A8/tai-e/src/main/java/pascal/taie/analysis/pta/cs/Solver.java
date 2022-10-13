@@ -70,7 +70,7 @@ public class Solver {
 
     private CSManager csManager;
 
-    private CSCallGraph callGraph;
+    public CSCallGraph callGraph;
 
     private PointerFlowGraph pointerFlowGraph;
 
@@ -317,7 +317,10 @@ public class Solver {
         //if (jMethod == null) return;
         // callSite应该是与stmt保持一致
         CSCallSite callSite = csManager.getCSCallSite(context, stmt);
-        Context callCtx = contextSelector.selectContext(callSite, recv, jMethod);
+        Context callCtx = recv != null?
+                contextSelector.selectContext(callSite, recv, jMethod) :
+                contextSelector.selectContext(callSite, jMethod);
+
         // 但是CSMethod应该通过select选择context？
         CSMethod csMethod = csManager.getCSMethod(callCtx, jMethod);
         if (recv != null)

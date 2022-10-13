@@ -25,11 +25,10 @@ package pascal.taie.analysis.pta.plugin.taint;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pascal.taie.World;
+import pascal.taie.analysis.graph.callgraph.Edge;
 import pascal.taie.analysis.pta.PointerAnalysisResult;
 import pascal.taie.analysis.pta.core.cs.context.Context;
-import pascal.taie.analysis.pta.core.cs.element.CSManager;
-import pascal.taie.analysis.pta.core.cs.element.CSObj;
-import pascal.taie.analysis.pta.core.cs.element.CSVar;
+import pascal.taie.analysis.pta.core.cs.element.*;
 import pascal.taie.analysis.pta.core.heap.Obj;
 import pascal.taie.analysis.pta.cs.Solver;
 import pascal.taie.analysis.pta.pts.PointsToSetFactory;
@@ -133,6 +132,21 @@ public class TaintAnalysiss {
         PointerAnalysisResult result = solver.getResult();
         // TODO - finish me
         // You could query pointer analysis results you need via variable result.
+        for (Edge<CSCallSite, CSMethod> edge: solver.callGraph.edges().toList()) {
+            for (Sink sink : config.getSinks()) {
+                if (Objects.equals(sink.method(), edge.getCallee().getMethod())) {
+                    Invoke sinkCall = edge.getCallSite().getCallSite();
+                    Var argument = sinkCall.getInvokeExp().getArg(sink.index());
+                    for (CSObj csObj: result.getPointsToSet(
+                            csManager.getCSVar(edge.getCallSite().getContext(), argument))) {
+                        Obj obj = csObj.getObject();
+                        if (manager.isTaint(obj)) {
+                            taintFlows.add(new TaintFlow(manager.getSourceCall(obj), sinkCall, sink.index()));
+                        }
+                    }
+                }
+            }
+        }
         return taintFlows;
     }
 }

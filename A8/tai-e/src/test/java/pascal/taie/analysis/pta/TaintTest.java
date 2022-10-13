@@ -70,4 +70,10 @@ public class TaintTest {
         Tests.testCSPTA(DIR, "TaintInList",
                 "cs:2-obj;taint-config:src/test/resources/pta/taint/taint-config.yml");
     }
+
+    @Test
+    public void testCSTaint() {
+        Tests.testCSPTA(DIR, "CSTaint",
+                "cs:2-obj;taint-config:src/test/resources/pta/taint/taint-config.yml");
+    }
 }
